@@ -1,0 +1,17 @@
+{
+  "certificate_type": "I-REC",
+  "registry": "I-REC_STANDARD",
+  "registry_url": "https://registry.irec-standard.org/certificates/UNRETIRED-ACTIVE",
+  "project_name": "Hydro Energy Plant Sector 2",
+  "serial_start": "IREC-2026-VN-0099000",
+  "serial_end": "IREC-2026-VN-0099500",
+  "volume": "500",
+  "unit": "MWh",
+  "vintage": "2026",
+  "country": "VN",
+  "beneficiary": "Trader Warehouse Account",
+  "status": "ACTIVE",
+  "retirement_reason": "",
+  "double_claim_risk": "SUSPECTED",
+  "issuer_signature": "0x33445566778899aabbccddeeff00112233445566778899aabbccddeeff001122"
+}

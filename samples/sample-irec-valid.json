@@ -1,0 +1,18 @@
+{
+  "certificate_type": "I-REC",
+  "registry": "I-REC_STANDARD",
+  "registry_url": "https://registry.irec-standard.org/certificates/IREC-2026-VN-SOLAR-0019283",
+  "project_name": "Ninh Thuan Solar Farm 50MW",
+  "serial_start": "IREC-2026-VN-0001000",
+  "serial_end": "IREC-2026-VN-0002000",
+  "volume": "1000",
+  "unit": "MWh",
+  "vintage": "2026",
+  "country": "VN",
+  "beneficiary": "Acme Corp ESG Fund",
+  "status": "RETIRED",
+  "retirement_reason": "Scope 2 Emission Offset 2026",
+  "retirement_date": "2026-08-20",
+  "double_claim_risk": "NONE",
+  "issuer_signature": "0x98fbc9123891a2bc837e9123847a9b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a"
+}

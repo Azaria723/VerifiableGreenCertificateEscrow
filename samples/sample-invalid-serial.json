@@ -1,0 +1,17 @@
+{
+  "certificate_type": "I-REC",
+  "registry": "I-REC_STANDARD",
+  "registry_url": "https://registry.irec-standard.org/certificates/INVALID-SERIAL",
+  "project_name": "Phan Rang Wind Power 30MW",
+  "serial_start": "IREC-2024-FAKE-0000001",
+  "serial_end": "IREC-2024-FAKE-0000500",
+  "volume": "500",
+  "unit": "MWh",
+  "vintage": "2024",
+  "country": "VN",
+  "beneficiary": "Acme Corp ESG Fund",
+  "status": "RETIRED",
+  "retirement_reason": "Offset",
+  "double_claim_risk": "SUSPECTED",
+  "issuer_signature": "0x0000000000000000000000000000000000000000000000000000000000000000"
+}

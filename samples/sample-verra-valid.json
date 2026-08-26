@@ -1,0 +1,18 @@
+{
+  "certificate_type": "VERRA",
+  "registry": "VERRA_VCS",
+  "registry_url": "https://registry.verra.org/app/projectDetail/VCS/2891",
+  "project_name": "Reforestation Project Amazon Sector 4",
+  "serial_start": "VCS-2026-BR-0050000",
+  "serial_end": "VCS-2026-BR-0052500",
+  "volume": "2500",
+  "unit": "tCO2e",
+  "vintage": "2025",
+  "country": "BR",
+  "beneficiary": "Nordic Carbon Neutral Portfolio",
+  "status": "RETIRED",
+  "retirement_reason": "Corporate Carbon Neutrality Target",
+  "retirement_date": "2026-08-15",
+  "double_claim_risk": "NONE",
+  "issuer_signature": "0x11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff"
+}
