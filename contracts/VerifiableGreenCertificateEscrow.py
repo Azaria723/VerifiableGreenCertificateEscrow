@@ -68,6 +68,7 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
     # Registry allowlist maps
     allowed_registries: TreeMap[u256, str]
     allowed_registry_status: TreeMap[u256, u256]
+    allowed_registry_sources: TreeMap[u256, str]
 
     def __init__(self):
         self.owner = gl.message.sender_address
@@ -80,7 +81,11 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
         # set_registry_allowlist.
         self.allowed_registries[u256(0)] = "I-REC"
         self.allowed_registry_status[u256(0)] = u256(1)
-        self.registry_allowlist_count = u256(1)
+        self.allowed_registry_sources[u256(0)] = "https://registry.irec-standard.org/"
+        self.allowed_registries[u256(1)] = "I-REC_STANDARD"
+        self.allowed_registry_status[u256(1)] = u256(1)
+        self.allowed_registry_sources[u256(1)] = "https://registry.irec-standard.org/"
+        self.registry_allowlist_count = u256(2)
 
     # -------------------------------------------------------------------------
     # Internal Helpers
@@ -109,17 +114,6 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
         reg_clean = registry.strip().upper()
         if len(reg_clean) == 0:
             return False
-        # Default approved registries
-        if (
-            reg_clean == "I-REC_STANDARD"
-            or reg_clean == "VERRA_VCS"
-            or reg_clean == "GOLD_STANDARD"
-            or reg_clean == "GLOBAL_CARBON_COUNCIL"
-            or reg_clean == "REDEX_REGISTRY"
-            or reg_clean == "TIGR_REGISTRY"
-        ):
-            return True
-
         count_int = int(self.registry_allowlist_count)
         for i in range(count_int):
             idx = u256(i)
@@ -127,6 +121,18 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
                 if self.allowed_registries.get(idx, "") == reg_clean:
                     return True
         return False
+
+    def _registry_source(self, registry: str) -> str:
+        reg_clean = registry.strip().upper()
+        for i in range(int(self.registry_allowlist_count)):
+            idx = u256(i)
+            if self.allowed_registries.get(idx, "") == reg_clean:
+                if self.allowed_registry_status.get(idx, u256(0)) == u256(1):
+                    return self.allowed_registry_sources.get(idx, "")
+        return ""
+
+    def _is_under_source(self, url: str, source: str) -> bool:
+        return len(source) > 8 and url.startswith(source) and self._is_https_url(url)
 
     def _compute_identity_hash(self, registry: str, cert_type: str, serial_start: str, serial_end: str) -> str:
         import hashlib
@@ -149,14 +155,41 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
         for i in range(count_int):
             idx = u256(i)
             if self.allowed_registries.get(idx, "") == cleaned:
+                if allowed == u256(1) and len(self.allowed_registry_sources.get(idx, "")) == 0:
+                    return "REGISTRY_SOURCE_REQUIRED"
                 self.allowed_registry_status[idx] = allowed
                 return "REGISTRY_UPDATED"
 
+        if allowed == u256(1):
+            return "USE_SET_REGISTRY_SOURCE"
         new_idx = self.registry_allowlist_count
         self.allowed_registries[new_idx] = cleaned
         self.allowed_registry_status[new_idx] = allowed
         self.registry_allowlist_count = new_idx + u256(1)
         return "REGISTRY_ADDED"
+
+    @gl.public.write
+    def set_registry_source(self, registry: str, source_prefix: str, allowed: u256) -> str:
+        if gl.message.sender_address != self.owner:
+            return "OWNER_ONLY"
+        cleaned = registry.strip().upper()
+        prefix = source_prefix.strip()
+        if len(cleaned) == 0 or len(cleaned) > 64:
+            return "INVALID_REGISTRY"
+        if not self._is_https_url(prefix) or not prefix.endswith("/"):
+            return "INVALID_SOURCE_PREFIX"
+        for i in range(int(self.registry_allowlist_count)):
+            idx = u256(i)
+            if self.allowed_registries.get(idx, "") == cleaned:
+                self.allowed_registry_sources[idx] = prefix
+                self.allowed_registry_status[idx] = allowed
+                return "REGISTRY_SOURCE_UPDATED"
+        new_idx = self.registry_allowlist_count
+        self.allowed_registries[new_idx] = cleaned
+        self.allowed_registry_sources[new_idx] = prefix
+        self.allowed_registry_status[new_idx] = allowed
+        self.registry_allowlist_count = new_idx + u256(1)
+        return "REGISTRY_SOURCE_ADDED"
 
     # -------------------------------------------------------------------------
     # Escrow Lifecycle Write Methods
@@ -284,6 +317,15 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
             return "INVALID_RAW_EVIDENCE_SIZE"
 
         registry = self.escrow_registries[escrow_id]
+        trusted_source = self._registry_source(registry)
+        if len(trusted_source) == 0:
+            return "REGISTRY_SOURCE_NOT_CONFIGURED"
+        if not self._is_under_source(registry_url, trusted_source):
+            return "REGISTRY_URL_OUTSIDE_TRUSTED_SOURCE"
+        if not self._is_under_source(project_url, trusted_source):
+            return "PROJECT_URL_OUTSIDE_TRUSTED_SOURCE"
+        if not self._is_under_source(retirement_url, trusted_source):
+            return "RETIREMENT_URL_OUTSIDE_TRUSTED_SOURCE"
         cert_type = self.escrow_cert_types[escrow_id]
         identity_hash = self._compute_identity_hash(registry, cert_type, serial_start, serial_end)
 
@@ -332,6 +374,7 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
         ret_url = self.cert_retirement_urls[escrow_id]
         expected_digest = self.cert_digests[escrow_id]
         expected_registry = self.escrow_registries[escrow_id]
+        trusted_source = self._registry_source(expected_registry)
         expected_beneficiary = self.escrow_req_beneficiaries[escrow_id]
         expected_volume = self.escrow_req_volumes[escrow_id]
         expected_vintage = self.escrow_req_vintages[escrow_id]
@@ -359,10 +402,13 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
             calc_digest = hashlib.sha256(raw_bytes).hexdigest().lower()
             digest_ok = (calc_digest == expected_digest)
 
-            # 2. Fetch retirement URL
+            # 2. Fetch a canonical registry endpoint derived from the on-chain
+            # registry mapping and certificate serial. The supplier's submitted
+            # retirement URL is metadata only and is never fetched for authority.
             fetch_ok = False
             try:
-                resp = gl.nondet.web.get(ret_url)
+                canonical_url = trusted_source + "certificates/" + s_start + ".json"
+                resp = gl.nondet.web.get(canonical_url)
                 if resp.status == 200 and len(resp.body) <= 256000:
                     fetch_ok = True
                     web_data = json.loads(resp.body.decode("utf-8"))
@@ -397,10 +443,10 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
                 fetch_ok = False
 
             # 3. Deterministic Decision Tree
-            if not fetch_ok or not digest_ok:
+            if not fetch_ok:
                 verdict = "UNAVAILABLE"
                 verdict_status_code = 9  # STATUS_UNAVAILABLE
-                reason_code = "REGISTRY_URL_UNREACHABLE_OR_DIGEST_MISMATCH"
+                reason_code = "TRUSTED_REGISTRY_SOURCE_UNREACHABLE"
             elif double_claim_risk == "SUSPECTED":
                 verdict = "CONFLICTED"
                 verdict_status_code = 10  # STATUS_CONFLICTED
@@ -433,6 +479,7 @@ class VerifiableGreenCertificateEscrow(gl.Contract):
                 "verdict_status_code": verdict_status_code,
                 "reason_code": reason_code,
                 "identity_hash": identity_hash,
+                "canonical_source": trusted_source,
             }
             return json.dumps(diag, sort_keys=True, separators=(",", ":"))
 
