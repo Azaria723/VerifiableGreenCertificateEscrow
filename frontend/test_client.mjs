@@ -1,7 +1,7 @@
 import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 
-const CONTRACT_ADDRESS = "0xcd1B45045d3F41FD6224ee22e1Cc3FFA2D420Ba2";
+const CONTRACT_ADDRESS = "0x2440A4742DEE0878c2AD6FaacaAE68E23063F4d6";
 
 async function main() {
   console.log("=== Testing with genlayer-js on Studionet ===");

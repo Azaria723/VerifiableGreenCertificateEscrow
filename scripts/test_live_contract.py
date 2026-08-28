@@ -1,7 +1,7 @@
 import json
 import urllib.request
 
-CONTRACT_ADDRESS = "0x54B086F8B4023bB9eFb605a7A06998b3E6f757d3"
+CONTRACT_ADDRESS = "0x2440A4742DEE0878c2AD6FaacaAE68E23063F4d6"
 RPC_URL = "https://studio.genlayer.com/api"
 
 def call_contract_view(method_name, args=[]):

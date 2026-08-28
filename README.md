@@ -73,6 +73,17 @@ G:\Genlayer Azaria\VerifiableGreenCertificateEscrow\
 
 ## 4. Local Testing & Verification
 
+### Verified Studionet deployment
+
+- Contract: `0x2440A4742DEE0878c2AD6FaacaAE68E23063F4d6`
+- Successful lifecycle: escrow `#3`
+- Canonical record: `evidence/certificates/DEMO-002.json`
+- Verification result: `VERIFIED` (`ALL_REGISTRY_CRITERIA_VERIFIED`)
+- Settlement transaction: `0xfd6b86ad3afa936d756c11ceb0c576f2e589e690c75143a50b1807979219242b`
+- Paid to supplier: `0.001 GEN`
+
+See [`docs/studionet-e2e.md`](docs/studionet-e2e.md) for the exact, truthful evidence record. Earlier escrow attempts are retained in the explorer and documented as unsuccessful test iterations, not presented as successful evidence.
+
 ### Run Automated Contract Test Suite
 ```bash
 python -m pytest tests/ -v

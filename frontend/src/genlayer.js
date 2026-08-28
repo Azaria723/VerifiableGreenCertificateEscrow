@@ -4,7 +4,7 @@ import { studionet } from "genlayer-js/chains";
 export const chain = studionet;
 
 export const CONTRACT =
-  import.meta.env.VITE_CONTRACT_ADDRESS || "0xcd1B45045d3F41FD6224ee22e1Cc3FFA2D420Ba2";
+  import.meta.env.VITE_CONTRACT_ADDRESS || "0x2440A4742DEE0878c2AD6FaacaAE68E23063F4d6";
 
 export const configured = /^0x[a-fA-F0-9]{40}$/.test(CONTRACT);
 
