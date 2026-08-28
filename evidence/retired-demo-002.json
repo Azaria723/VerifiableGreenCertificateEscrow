@@ -1,0 +1,11 @@
+{
+  "registry": "I-REC",
+  "status": "RETIRED",
+  "beneficiary": "Demo Buyer",
+  "volume": "1000",
+  "vintage": "2025",
+  "serial_start": "DEMO-002",
+  "serial_end": "DEMO-002",
+  "double_claim_risk": "NONE",
+  "evidence_note": "Synthetic fixture for Studionet lifecycle testing; not an issued environmental certificate."
+}
